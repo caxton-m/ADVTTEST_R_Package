@@ -1,11 +1,17 @@
 Package: ADVTTEST
 Type: Package
-Title: What the Package Does (Title Case)
+Title: NULL hypothesis testing of t.test
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
-License: What license is it under?
+Author: Caxton Muchono
+Maintainer: Caxton Muchono <caxton.muchono-1@ou.edu>
+Description: Test the NULL hypothesis that the underlying means of two 
+    populations are the same.  That is you will be testing if the H0 
+    mu_x = mu_y or H1 mu_x - mu_y = 0.
+Imports:
+    dplyr, 
+    stats,
+    ggplot2
+License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+RoxygenNote: 7.2.3

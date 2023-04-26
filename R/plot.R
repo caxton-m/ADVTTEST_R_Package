@@ -13,8 +13,6 @@
 #' @export plot.Rttest
 #'
 #' @export
-#'
-#' @examples
 plot.Rttest = function(x, ...){
 
   if(x$paired){   # if paired

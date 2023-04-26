@@ -17,7 +17,7 @@
 #' @return list of the data frame
 #' @export
 #'
-#' @examples
+#' @examples  myttest(x = 1:10 ,y = 1:10 ,alpha=0.05,paired=FALSE)
 myttest = function(x, y, alpha, paired){
   t.test = NULL
 

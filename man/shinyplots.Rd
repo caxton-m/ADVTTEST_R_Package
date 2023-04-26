@@ -7,8 +7,11 @@
 shinyplots()
 }
 \value{
-plots
+plots and print output of package
 }
 \description{
 Wigdets, plotting areas and layouts
+}
+\examples{
+\dontrun{ shinyplots()}
 }

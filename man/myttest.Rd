@@ -25,3 +25,6 @@ list of the data frame
 - A "Y/N" conclusion as to whether we should reject the NULL of equality of means at the alpha level of significance
 - The summary statistics made by the appropriate t.test in a data list
 }
+\examples{
+ myttest(x = 1:10 ,y = 1:10 ,alpha=0.05,paired=FALSE)
+}

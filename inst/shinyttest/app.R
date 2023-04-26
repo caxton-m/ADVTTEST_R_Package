@@ -13,21 +13,25 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("T-Test and WELCH testing"),
 
-    # Sidebar with a slider input for number of bins 
+    # Sidebar with input for number of testing data
     sidebarLayout(
         sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
+          sliderInput("df_length", "Length of X and Y:", min = 1, max = 50, value = 30),
+          numericInput("x_mean"  , "X mean:"           , min = 1, max = 50, value = 10),
+          numericInput("y_mean"  , "Y mean:"           , min = 1, max = 50, value = 8),
+          numericInput("x_sd"    , "X standard dev:"   , min = 1, max = 50, value = 15),
+          numericInput("y_sd"    , "Y standard dev:"   , min = 1, max = 50, value = 15),
+          numericInput("alpha"   , "Alpha:"            , min = 0, max = 1, value = 0.05)
         ),
 
-        # Show a plot of the generated distribution
+        # Show a plot and print of the generated
         mainPanel(
-           plotOutput("distPlot")
+          tabsetPanel(type = "tab",
+                      tabPanel("Print", verbatimTextOutput("distPrint")),
+                      tabPanel("Plot" , plotOutput("distPlot"))
+                      )
         )
     )
 )
@@ -35,17 +39,33 @@ ui <- fluidPage(
 # Define server logic required to draw a histogram
 server <- function(input, output) {
 
-    output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    output$distPrint <- renderPrint({
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white',
-             xlab = 'Waiting time to next eruption (in mins)',
-             main = 'Histogram of waiting times')
+      # Set the seed for testing data
+      set.seed(32); x=rnorm(input$df_length, mean = input$x_mean, sd = input$x_sd)
+      set.seed(35); y=rnorm(input$df_length, mean = input$y_mean, sd = input$y_sd)
+
+      # call the ADVTTEST Package
+      ans1 = ADVTTEST::myttest(x,y, alpha = input$alpha, paired = FALSE)
+
+      # print the confidence interval and test type
+      print(ans1)
+    })
+
+    output$distPlot <- renderPlot({
+
+      # Set the seed for testing data
+      set.seed(32); x=rnorm(input$df_length, mean = input$x_mean, sd = input$x_sd)
+      set.seed(35); y=rnorm(input$df_length, mean = input$y_mean, sd = input$y_sd)
+
+      # call the ADVTTEST Package
+      ans1 = ADVTTEST::myttest(x,y, alpha = input$alpha, paired = FALSE)
+
+      # plot the boxplots
+      plot(ans1)
+
     })
 }
 
-# Run the application 
+# Run the application
 shinyApp(ui = ui, server = server)

@@ -8,8 +8,6 @@
 #' @export print.Rttest
 #'
 #' @export
-#'
-#' @examples
 print.Rttest = function(x, ...) {
 
   ci        = x$conf_inter  # store the confidence interval

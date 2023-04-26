@@ -41,13 +41,13 @@ myttest = function(x, y, alpha, paired){
   conf_inter = tests$conf.int
   p_value = tests$p.value
 
-  if(p_value < alpha) { print("Y") }
-  else                { print("N") }
+  if(p_value < alpha) { conclusion = "Y" }
+  else                { conclusion = "N" }
 
   # make a named list of function
   fcn_list = list(data = df, alpha = alpha, paired = paired,
                   conf_inter = conf_inter, p_value = p_value,
-                  test_type = test_type)
+                  test_type = test_type, conclusion = conclusion)
 
   # make list to be of class "Rttest"
   class(fcn_list) = "Rttest"

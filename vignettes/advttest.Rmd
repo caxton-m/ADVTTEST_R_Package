@@ -1,0 +1,224 @@
+---
+title: "ADVTTEST R package"
+author: "Caxton Muchono"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{advttest}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup, echo=FALSE}
+library(ADVTTEST)
+```
+
+
+# Theory
+
+The use of t.test theory implemented in this package. Specifically, the package 
+will test the NULL hypothesis that the underlying means of two populations are
+the same. That is you will be testing:
+
+$H_0 : \mu_x = \mu_y$
+
+or more usefully
+
+$H_1 :  \mu_x - \mu_y = 0$
+
+This involves using a built-in function called `t.test(x,y)` where x and y are 
+samples from the respective populations. Some important experimental design 
+structures must be taken into consideration before using the function. These
+considerations will be expressed through options supplied to the t.test function.
+
+### Considerations
+
+If x and y are independent and the variances in the populations are equal 
+then the test is performed using `var.equal = TRUE`
+
+`t.test(x,y, var.equal = TRUE)`
+
+If x and y are independent and the population variances are not equal 
+then the test is done using 
+
+`t.test(x,y, var.equal = FALSE)`
+
+If the samples are "paired", that is each experimental unit is measured 
+twice, the first goes into x and the last into y then the appropriate test is
+
+`t.test(x,y,paired=TRUE)`
+
+The NULL hypothesis is placed in the options as $\mu=0$ which is the 
+default value.
+
+
+##  The myttest function 
+
+Myttest function will investigate the data for evidence for a difference
+in the population variances if the data supports the conclusion that the 
+underlying variances are likely different or if paired = TRUE then an 
+appropriate t-test is made to produce a list containing:
+
+- "Welch", "T-test", "Paired" depending on what test was conducted
+- A "Y/N" conclusion as to whether we should reject the NULL of equality 
+of means at the alpha level of significance
+- The summary statistics made by the appropriate t.test in a data list
+
+The function will takes two vectors, alpha and paired. Assume that the 
+variances in the population are the same (this will mean a simple no 
+conditional function)
+
+The function must produce a named list containing:
+
+* A data frame containing x and y
+* alpha $\alpha$
+* paired
+* The confidence interval for $\mu_x - \mu_y$
+* The pvalue
+* the test type
+* the "Y/N" conclusion
+
+The list will be of class "Rttest"
+
+```{r, eval=FALSE}
+
+myttest = function(x, y, alpha, paired){
+  t.test = NULL
+
+  # create a data frame
+  df = data.frame(x = x, y = y)
+
+  # finding the population variance
+  sd1 = sd(x)
+  sd2 = sd(y)
+
+  # determine conclusion that the underlying variances
+  if(paired)                   { test_type = "Paired"; v = FALSE }
+  else if (abs(sd1 - sd2) < 5) { test_type = "T-test"; v = TRUE  }
+  else                         { test_type = "WELCH "; v = FALSE }
+
+  # make t-test assuming that the variances in the population are the same
+  tests = t.test(x = x, y = y,
+                 var.equal = v, paired = paired, conf.level = 1 - alpha)
+
+  # find the confidence intervals and p-value
+  conf_inter = tests$conf.int
+  p_value = tests$p.value
+
+  if(p_value < alpha) { conclusion = "Y" }
+  else                { conclusion = "N" }
+
+  # make a named list of function
+  fcn_list = list(data = df, alpha = alpha, paired = paired,
+                  conf_inter = conf_inter, p_value = p_value,
+                  test_type = test_type, conclusion = conclusion)
+
+  # make list to be of class "Rttest"
+  class(fcn_list) = "Rttest"
+
+  # return the list
+  return(fcn_list)
+}
+
+```
+
+## An informative plot with the "Rttest" class
+
+The "Rttest" class that creates boxplots of the data when 
+non - paired data is analyzed. It also will make a boxplot of differences in 
+data when `paired = TRUE` The ci for the difference of means is plotted inside
+the boxplot of differences.
+
+```{r, eval=FALSE}
+
+plot.Rttest = function(x, ...){
+
+  if(x$paired){   # if paired
+
+    data_var = NULL    # the letter of the the data (X)
+    value    = NULL    # value of data
+
+    # merge the differences in data of x object
+    m_data = data.frame(value = x$data$x - x$data$y, data_var = rep(LETTERS[24]))
+
+    # create the boxplot
+    ggplot(m_data, aes(x = data_var , y= value , fill=data_var )) +
+      geom_boxplot() +
+      stat_summary(fun=mean, geom="point", shape=23, size=4, fill="white") +
+      scale_fill_discrete(name = "categories") +
+      labs(x = "Difference", y = "samples diff",
+           title ="Boxplot of the samples")
+  }
+  else{           # else if not paired
+
+    data_var = NULL    # the letter of the the data (X or Y)
+    value    = NULL    # value of data
+
+    # create separate data sets of x and y
+    x_data = data.frame(value = x$data$x, data_var = rep(LETTERS[24]))
+    y_data = data.frame(value = x$data$y, data_var = rep(LETTERS[25]))
+
+    # merge the x and y data into new data set
+    merge_data = merge(x = x_data, y = y_data, all = TRUE)
+
+    # create the boxplot
+    ggplot(merge_data, aes(x = data_var , y= value , fill=data_var )) +
+      scale_fill_discrete(name = "categories") +
+      geom_boxplot() +
+      labs(x = "category", y = "samples",
+           title ="Boxplot of the samples")
+  }
+}
+
+```
+
+## An informative print with the "Rttest" class
+
+Print function prints to the command line  A (1-$\alpha$)100% confidence 
+interval for $\mu_x - \mu_y$ and the type of test
+
+```{r, eval=FALSE}
+
+print.Rttest = function(x, ...) {
+
+  ci        = x$conf_inter  # store the confidence interval
+  test_type = x$test_type   # store the type of test
+
+  # create a list with summary data and return it
+  pr_list = list(ci = ci, test_type = test_type)
+
+  return(pr_list)
+}
+
+```
+
+### Test the constructor with a function call from the provided data
+
+```{r}
+
+set.seed(32); x=rnorm(30,mean=10,sd=15)
+set.seed(35); y=rnorm(30,mean=8,sd=15)
+ans1=ADVTTEST::myttest(x,y,alpha=0.05,paired=FALSE)
+print(ans1)
+plot(ans1)
+
+set.seed(32); x=rnorm(30,mean=10,sd=5)
+set.seed(35); y=rnorm(30,mean=8,sd=15)
+ans2=ADVTTEST::myttest(x,y,alpha=0.05,paired=FALSE)
+print(ans2)
+plot(ans2)
+
+set.seed(32); x=rnorm(30,mean=10,sd=15)
+set.seed(35); y = x+ rnorm(30, 5 ,4)
+ans3=ADVTTEST::myttest(x,y,alpha=0.05,paired=TRUE)
+print(ans3)
+plot(ans3)
+
+```

@@ -7,6 +7,7 @@
 #' @param ... from ggplot function
 #'
 #' @importFrom ggplot2 'aes' 'geom_boxplot' 'ggplot' 'stat_summary'
+#'     'scale_fill_discrete' 'labs'
 #'
 #' @return plot of the data frame
 #' @export plot.Rttest
@@ -26,7 +27,11 @@ plot.Rttest = function(x, ...){
 
     # create the boxplot
     ggplot(m_data, aes(x = data_var , y= value , fill=data_var )) +
-      geom_boxplot() + stat_summary(fun=mean, geom="point", shape=23, size=4, fill="white")
+      geom_boxplot() +
+      stat_summary(fun=mean, geom="point", shape=23, size=4, fill="white") +
+      scale_fill_discrete(name = "categories") +
+      labs(x = "Difference", y = "samples diff",
+           title ="Boxplot of the samples")
   }
   else{           # else if not paired
 
@@ -42,6 +47,9 @@ plot.Rttest = function(x, ...){
 
     # create the boxplot
     ggplot(merge_data, aes(x = data_var , y= value , fill=data_var )) +
-      geom_boxplot()
+      scale_fill_discrete(name = "categories") +
+      geom_boxplot() +
+      labs(x = "category", y = "samples",
+           title ="Boxplot of the samples")
   }
 }

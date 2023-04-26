@@ -12,9 +12,10 @@
 #' @examples
 print.Rttest = function(x, ...) {
 
-  ci        = x$conf_inter
-  test_type = x$test_type
+  ci        = x$conf_inter  # store the confidence interval
+  test_type = x$test_type   # store the type of test
 
+  # create a list with summary data and return it
   pr_list = list(ci = ci, test_type = test_type)
 
   return(pr_list)

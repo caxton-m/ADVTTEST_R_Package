@@ -10,7 +10,8 @@ Description: Test the NULL hypothesis that the underlying means of two
 Imports:
     dplyr, 
     stats,
-    ggplot2
+    ggplot2,
+    shiny
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
@@ -19,3 +20,4 @@ Suggests:
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+URL: https://github.com/caxton-m/DSA5041_R_Package.git
